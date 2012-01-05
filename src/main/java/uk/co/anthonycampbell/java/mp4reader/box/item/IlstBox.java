@@ -19,7 +19,10 @@ package uk.co.anthonycampbell.java.mp4reader.box.item;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -43,7 +46,7 @@ public class IlstBox extends AbstractBox implements Box {
 
 	// Declare box properties
 	protected final String name;
-	protected final String artist;
+	protected final String show;
 	protected final Date date;
 	protected final Rating rating;
 	protected final String genre;
@@ -51,6 +54,10 @@ public class IlstBox extends AbstractBox implements Box {
 	protected final String description;
 	protected final String synopsis;
 	protected final String mediaType;
+	protected final List<String> actors;
+	protected final List<String> directors;
+	protected final List<String> producers;
+	protected final List<String> screenWriters;
 	protected final String tvShow;
 	protected final String tvEpisodeId;
 	protected final String tvSeason;
@@ -79,14 +86,18 @@ public class IlstBox extends AbstractBox implements Box {
 		
 		// Set defaults
 		String name = "";
-		String artist = "";
+		String show = "";
 		Date date = new Date();
 		Rating rating = Rating.UNKNOWN;
 		String genre = "";
 		byte[] cover = new byte[0];
 		String description = "";
 		String synopsis = "";
-		String mediaType = "";		
+		String mediaType = "";
+		List<String> actors = new ArrayList<>();
+		List<String> directors = new ArrayList<>();
+		List<String> producers = new ArrayList<>();
+		List<String> screenWriters = new ArrayList<>();
 		String tvShow = "";
 		String tvEpisodeId = "";	 
 		String tvSeason = ""; 
@@ -116,7 +127,7 @@ public class IlstBox extends AbstractBox implements Box {
 							break;
 							
 						case APPLE_ITEM_ARTIST:
-							artist = new String(data);
+							show = new String(data);
 							break;
 							
 						case APPLE_ITEM_CREATION:
@@ -186,8 +197,31 @@ public class IlstBox extends AbstractBox implements Box {
 									final String metaXml = new String(data);
 									
 									if (StringUtils.isNotEmpty(metaXml)) {
-										log.debug("- " + metaXml);
-										log.debug("- " + Util.parseITunesMeta(metaXml));
+										final Map<String, List<String>> iTunesMetaData = Util.parseITunesMeta(metaXml);
+										
+										if (iTunesMetaData != null && !iTunesMetaData.isEmpty()) {
+											for (final String key: iTunesMetaData.keySet()) {
+												if (StringUtils.isNotEmpty(key)) {
+													switch (key) {
+														case "cast":
+															actors.addAll(iTunesMetaData.get(key));
+															break;
+															
+														case "directors":
+															directors.addAll(iTunesMetaData.get(key));
+															break;
+															
+														case "producers":
+															producers.addAll(iTunesMetaData.get(key));
+															break;
+															
+														case "screenwriters":
+															screenWriters.addAll(iTunesMetaData.get(key));
+															break;
+													}
+												}
+											}
+										}
 									}
 									break;
 							}
@@ -249,7 +283,7 @@ public class IlstBox extends AbstractBox implements Box {
 		}
 
 		this.name = name;
-		this.artist = artist;
+		this.show = show;
 		this.date = date;
 		this.rating = rating;
 		this.genre = genre;
@@ -257,6 +291,10 @@ public class IlstBox extends AbstractBox implements Box {
 		this.description = description;
 		this.synopsis = synopsis;
 		this.mediaType = mediaType;
+		this.actors = actors;
+		this.directors = directors;
+		this.producers = producers;
+		this.screenWriters = screenWriters;
 		this.tvShow = tvShow;
 		this.tvEpisodeId = tvEpisodeId;
 		this.tvSeason = tvSeason;
@@ -282,10 +320,10 @@ public class IlstBox extends AbstractBox implements Box {
 	}
 
 	/**
-	 * @return the artist.
+	 * @return the show.
 	 */
-	public String getArtist() {
-		return this.artist;
+	public String getShow() {
+		return this.show;
 	}
 
 	/**
@@ -337,6 +375,34 @@ public class IlstBox extends AbstractBox implements Box {
 		return this.mediaType;
 	}
 	
+	/**
+	 * @return list of actors.
+	 */
+	public List<String> getActors() {
+		return this.actors;
+	}
+
+	/**
+	 * @return list of directors.
+	 */
+	public List<String> getDirectors() {
+		return this.directors;
+	}
+
+	/**
+	 * @return list of producers.
+	 */
+	public List<String> getProducers() {
+		return this.producers;
+	}
+
+	/**
+	 * @return list of screen writers.
+	 */
+	public List<String> getScreenWriters() {
+		return this.screenWriters;
+	}
+
 	/**
 	 * @return the TV show.
 	 */

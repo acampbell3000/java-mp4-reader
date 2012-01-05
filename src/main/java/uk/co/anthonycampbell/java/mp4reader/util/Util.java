@@ -281,4 +281,34 @@ public class Util {
 		
 		return arrayList;
 	}
+	
+	/**
+	 * Utility method to print the provided list of strings.
+	 * 
+	 * @param list - the list to print.
+	 * @return Comma delimited list of string values.
+	 */
+	public static String printList(final List<String> list) {
+		// Initialise result
+		final StringBuilder builder = new StringBuilder();
+		
+		// Validate
+		if (list != null && !list.isEmpty()) {
+			boolean first = true;
+			
+			for (final String element : list) {
+				if (StringUtils.isNotEmpty(element)) {
+					if (first) {
+						first = false;
+					} else {
+						builder.append(", ");	
+					}
+					
+					builder.append(element);
+				}
+			}
+		}
+		
+		return builder.toString();
+	}
 }
