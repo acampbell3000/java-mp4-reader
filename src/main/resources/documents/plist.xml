@@ -1,0 +1,97 @@
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>cast</key>
+	<array>
+		<dict>
+			<key>name</key>
+			<string>Ryan Reynolds</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Blake Lively</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Peter Sarsgaard</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Mark Strong</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Tim Robbins</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Jay O. Sanders</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Taika Waititi</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Angela Bassett</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Mike Doyle</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Nick Jandl</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Dylan James</string>
+		</dict>
+	</array>
+	<key>directors</key>
+	<array>
+		<dict>
+			<key>name</key>
+			<string>Martin Campbell</string>
+		</dict>
+	</array>
+	<key>producers</key>
+	<array>
+		<dict>
+			<key>name</key>
+			<string>Greg Berlanti</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Donald De Line</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Herb Gains</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Andrew Haas</string>
+		</dict>
+	</array>
+	<key>screenwriters</key>
+	<array>
+		<dict>
+			<key>name</key>
+			<string>Greg Berlanti</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Michael Green</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Marc Guggenheim</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Michael Goldenberg</string>
+		</dict>
+	</array>
+</dict>
+</plist>

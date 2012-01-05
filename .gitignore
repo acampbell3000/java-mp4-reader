@@ -1,0 +1,13 @@
+.svn
+.classpath
+.project
+.settings
+.DS_Store
+*.log
+*.ser
+*.zip
+*.m4v
+*.mp4
+plugin.xml
+target/
+target-eclipse/
