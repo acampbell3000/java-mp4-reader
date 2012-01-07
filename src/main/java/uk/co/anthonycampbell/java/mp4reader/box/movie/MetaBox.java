@@ -41,6 +41,7 @@ public class MetaBox extends AbstractBox implements Box {
 	// Declare box properties
 	protected final short version;
 	protected final long flags;
+	protected final IlstBox metaData;
 	
 	/**
 	 * Constructor.
@@ -59,6 +60,9 @@ public class MetaBox extends AbstractBox implements Box {
 		this.version = reader.readUnsignedByte();
 		this.flags = reader.readHex();
 		
+		// Set defaults
+		IlstBox metaData = null;
+		
 		// Parse inner boxes
 		while (bytesRemaining() > 0) {
 			final Box nextBox = reader.nextBox();
@@ -66,14 +70,14 @@ public class MetaBox extends AbstractBox implements Box {
 			// Validate
 			if (nextBox != null) {
 				if (nextBox instanceof IlstBox && BoxType.APPLE_ITEM_LIST == nextBox.getBoxType()) {
-					final IlstBox ilstBox = (IlstBox) nextBox;
-
-//					name = IlstBox.getText();				
+					metaData = (IlstBox) nextBox;			
 				}
 				
 				log.debug("- '" + boxName + "' -> " + nextBox);	
 			}
 		}
+		
+		this.metaData = metaData;
 
 		// Clean up
 		skip();
@@ -100,6 +104,13 @@ public class MetaBox extends AbstractBox implements Box {
 		return Long.toHexString(this.flags);
 	}
 	
+	/**
+	 * @return the meta data.
+	 */
+	public IlstBox getMetaData() {
+		return this.metaData;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();

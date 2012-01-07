@@ -64,7 +64,7 @@ public class IodsBox extends AbstractBox implements Box {
 		this.descriptorTypeTags = reader.readHex();
 		this.descriptorTypeLength = reader.readUnsignedByte();
 		
-		if (this.descriptorTypeLength > 0) {
+		if (this.descriptorTypeLength == 7) {
 			this.descriptorId = reader.readUnsignedShort();
 			this.descriptorProfile = reader.readUnsignedByte();
 			this.sceneProfileLevel = reader.readUnsignedByte();

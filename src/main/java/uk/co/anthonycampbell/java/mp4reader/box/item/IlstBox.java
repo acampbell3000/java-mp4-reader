@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,7 @@ public class IlstBox extends AbstractBox implements Box {
 	private static final Logger log = LoggerFactory.getLogger(IlstBox.class.getName());
 
 	// Declare box properties
-	protected final String name;
+	protected final String title;
 	protected final String show;
 	protected final Date date;
 	protected final Rating rating;
@@ -53,18 +54,22 @@ public class IlstBox extends AbstractBox implements Box {
 	protected final byte[] cover;
 	protected final String description;
 	protected final String synopsis;
-	protected final String mediaType;
+	protected final MediaType mediaType;
 	protected final List<String> actors;
 	protected final List<String> directors;
 	protected final List<String> producers;
 	protected final List<String> screenWriters;
 	protected final String tvShow;
 	protected final String tvEpisodeId;
-	protected final String tvSeason;
-	protected final String tvEpisode;
-	protected final String tvNetworkName;	
+	protected final int tvSeason;
+	protected final int tvEpisode;
+	protected final String tvNetworkName;
 	protected final String copyright;
-	protected final String encoder;
+	protected final int trackNumber;
+	protected final int trackTotal;
+	protected final int diskNumber;
+	protected final int diskTotal;
+	protected final String encodingTool;
 	protected final String sortName;
 	protected final String sortAlbum;
 	protected final String sortAlbumArtist;
@@ -85,7 +90,7 @@ public class IlstBox extends AbstractBox implements Box {
 		super(reader, remainingOffset, boxName, boxType);
 		
 		// Set defaults
-		String name = "";
+		String title = "";
 		String show = "";
 		Date date = new Date();
 		Rating rating = Rating.UNKNOWN;
@@ -93,18 +98,22 @@ public class IlstBox extends AbstractBox implements Box {
 		byte[] cover = new byte[0];
 		String description = "";
 		String synopsis = "";
-		String mediaType = "";
+		MediaType mediaType = MediaType.UNKNOWN;
 		List<String> actors = new ArrayList<>();
 		List<String> directors = new ArrayList<>();
 		List<String> producers = new ArrayList<>();
 		List<String> screenWriters = new ArrayList<>();
 		String tvShow = "";
 		String tvEpisodeId = "";	 
-		String tvSeason = ""; 
-		String tvEpisode = "";	 
+		int tvSeason = 0; 
+		int tvEpisode = 0;	 
 		String tvNetworkName = "";
 		String copyright = "";
-		String encoder = "";
+		int trackNumber = 0;
+		int trackTotal = 0;
+		int diskNumber = 0;
+		int diskTotal = 0;
+		String encodingTool = "";
 		String sortName = "";
 		String sortAlbum = "";
 		String sortAlbumArtist = "";
@@ -123,7 +132,7 @@ public class IlstBox extends AbstractBox implements Box {
 				if (data != null && data.length > 0) {
 					switch (nextBox.getBoxType()) {
 						case APPLE_ITEM_NAME:
-							name = new String(data);
+							title = new String(data);
 							break;
 							
 						case APPLE_ITEM_ARTIST:
@@ -158,7 +167,15 @@ public class IlstBox extends AbstractBox implements Box {
 							break;
 							
 						case APPLE_ITEM_MEDIA_TYPE:
-							mediaType = new String(data);
+							final int mediaTypeInt = (data[0] & 0xFF);
+							final MediaType[] mediaTypeValues = MediaType.values();
+							
+							for (final MediaType mediaTypeValue : mediaTypeValues) {
+								if (mediaTypeValue.getId() == mediaTypeInt) {
+									mediaType = mediaTypeValue;
+									break;
+								}
+							}
 							break;
 							
 						case APPLE_ITEM_ADDITIONAL_NAME:
@@ -176,6 +193,8 @@ public class IlstBox extends AbstractBox implements Box {
 							switch (iTunesProperty) {
 								case RATING:
 									final String ratingString = new String(data);
+
+									log.debug(ratingString);
 									
 									if (StringUtils.isNotEmpty(ratingString)) {
 										final String[] ratingSplit = ratingString.split("|");
@@ -195,6 +214,8 @@ public class IlstBox extends AbstractBox implements Box {
 
 								case META:
 									final String metaXml = new String(data);
+
+									log.debug(metaXml);
 									
 									if (StringUtils.isNotEmpty(metaXml)) {
 										final Map<String, List<String>> iTunesMetaData = Util.parseITunesMeta(metaXml);
@@ -237,11 +258,11 @@ public class IlstBox extends AbstractBox implements Box {
 							break;
 							
 						case APPLE_ITEM_TV_SEASON:
-							tvSeason = new String(data);
+							tvSeason = Util.convertToUint16(Arrays.copyOfRange(data, 2, 4));
 							break;
 							
 						case APPLE_ITEM_TV_EPISODE:
-							tvEpisode = new String(data);
+							tvEpisode = Util.convertToUint16(Arrays.copyOfRange(data, 2, 4));
 							break;
 							
 						case APPLE_ITEM_TV_NETWORK_NAME:
@@ -252,8 +273,18 @@ public class IlstBox extends AbstractBox implements Box {
 							copyright = new String(data);
 							break;
 							
-						case APPLE_ITEM_ENCODER:
-							encoder = new String(data);
+						case APPLE_ITEM_ENCODING_TOOL:
+							encodingTool = new String(data);
+							break;
+							
+						case APPLE_ITEM_TRACK_NUMBER:
+							trackNumber = Util.convertToUint16(Arrays.copyOfRange(data, 2, 4));
+							trackTotal = Util.convertToUint16(Arrays.copyOfRange(data, 4, 6));
+							break;
+							
+						case APPLE_ITEM_DISK:
+							diskNumber = Util.convertToUint16(Arrays.copyOfRange(data, 2, 4));
+							diskTotal = Util.convertToUint16(Arrays.copyOfRange(data, 4, 6));
 							break;
 							
 						case APPLE_ITEM_SORT_NAME:
@@ -282,7 +313,7 @@ public class IlstBox extends AbstractBox implements Box {
 			}
 		}
 
-		this.name = name;
+		this.title = title;
 		this.show = show;
 		this.date = date;
 		this.rating = rating;
@@ -301,7 +332,11 @@ public class IlstBox extends AbstractBox implements Box {
 		this.tvEpisode = tvEpisode;
 		this.tvNetworkName = tvNetworkName;
 		this.copyright = copyright;
-		this.encoder = encoder;
+		this.trackNumber = trackNumber;
+		this.trackTotal = trackTotal;
+		this.diskNumber = diskNumber;
+		this.diskTotal = diskTotal;
+		this.encodingTool = encodingTool;
 		this.sortName = sortName;
 		this.sortAlbum = sortAlbum;
 		this.sortAlbumArtist = sortAlbumArtist;
@@ -313,10 +348,10 @@ public class IlstBox extends AbstractBox implements Box {
 	}
 	
 	/**
-	 * @return the name.
+	 * @return the title.
 	 */
-	public String getName() {
-		return this.name;
+	public String getTitle() {
+		return this.title;
 	}
 
 	/**
@@ -371,7 +406,7 @@ public class IlstBox extends AbstractBox implements Box {
 	/**
 	 * @return the media type.
 	 */
-	public String getMediaType() {
+	public MediaType getMediaType() {
 		return this.mediaType;
 	}
 	
@@ -420,14 +455,14 @@ public class IlstBox extends AbstractBox implements Box {
 	/**
 	 * @return the TV season.
 	 */
-	public String getTvSeason() {
+	public int getTvSeason() {
 		return this.tvSeason;
 	}
 
 	/**
 	 * @return the TV episode.
 	 */
-	public String getTvEpisode() {
+	public int getTvEpisode() {
 		return this.tvEpisode;
 	}
 
@@ -446,10 +481,38 @@ public class IlstBox extends AbstractBox implements Box {
 	}
 
 	/**
-	 * @return the encoder.
+	 * @return the track number.
 	 */
-	public String getEncoder() {
-		return this.encoder;
+	public int getTrackNumber() {
+		return this.trackNumber;
+	}
+
+	/**
+	 * @return the track total.
+	 */
+	public int getTrackTotal() {
+		return this.trackTotal;
+	}
+
+	/**
+	 * @return the disk number.
+	 */
+	public int getDiskNumber() {
+		return this.diskNumber;
+	}
+
+	/**
+	 * @return the disk total.
+	 */
+	public int getDiskTotal() {
+		return this.diskTotal;
+	}
+
+	/**
+	 * @return the encoding tool.
+	 */
+	public String getEncodingTool() {
+		return this.encodingTool;
 	}
 
 	/**
@@ -570,6 +633,53 @@ public class IlstBox extends AbstractBox implements Box {
 		 */
 		public int getWeighting() {
 			return this.weighting;
+		}
+	}
+
+	
+	/**
+	 * ENUM to represent the container media type.
+	 * 
+	 * @author Anthony Campbell - anthonycampbell.co.uk
+	 */
+	public enum MediaType {
+		MOVIE(0, "Movie"),
+		NORMAL(1, "Music"),
+		AUDIOBOOK(2, "Audio"),
+		MUSIC_VIDEO(6, "Music Video"),
+		SHORT_FILM(9, "Short Film"),
+		TV_SHOW(10, "TV Show"),
+		BOOKLET(11, "Booklet"),
+		RINGTONE(14, "Ringtone"),
+		UNKNOWN(-1, "Unknown");
+		
+		// Declare properties
+		private final int id;
+		private final String name;
+		
+		/**
+		 * Constructor.
+		 * 
+		 * @param id - the media type ID.
+		 * @param name - the media type name.
+		 */
+		private MediaType(final int id, final String name) {
+			this.id = id;
+			this.name = name;
+		}
+
+		/**
+		 * @return the ID.
+		 */
+		public int getId() {
+			return this.id;
+		}
+
+		/**
+		 * @return the name.
+		 */
+		public String getName() {
+			return this.name;
 		}
 	}
 }

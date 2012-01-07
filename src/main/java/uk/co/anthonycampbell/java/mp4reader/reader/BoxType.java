@@ -93,7 +93,7 @@ public enum BoxType {
 	APPLE_ITEM_TRACK("trk", ItemBox.class),
 	APPLE_ITEM_ALBUM("alb", ItemBox.class),
 	APPLE_ITEM_COMPOSER("com", ItemBox.class),
-	APPLE_ITEM_ENCODER("too", ItemBox.class),
+	APPLE_ITEM_ENCODING_TOOL("too", ItemBox.class),
 	APPLE_ITEM_GENRE("gnre", ItemBox.class),
 	APPLE_ITEM_GENRE2("gen", ItemBox.class),
 	APPLE_ITEM_DISK("disk", ItemBox.class),

@@ -85,7 +85,7 @@ public class MP4InputStream {
 			this.inputStream = FileUtils.openInputStream(file);
 			this.bufferedInputStream = new BufferedInputStream(this.inputStream);
 			this.dataInputStream = new DataInputStream(this.bufferedInputStream);
-			this.mp4Instance = new MP4(file.getAbsolutePath(), lastModified);
+			this.mp4Instance = new MP4(null);
 			this.bytesRead = 0;
 
 			log.trace("- size: " + available());

@@ -59,16 +59,18 @@ public class MP4Reader extends MP4InputStream {
 		// If we've read before we need to reset.
 		if (bytesRead() > 0) {
 			reset();
-			this.mp4Instance = new MP4(this.mp4Instance.getFilePath(),
-					this.mp4Instance.getModifiedDate());
+			this.mp4Instance = new MP4(null);
 		}
 		
 		// Validate
 		while (available() >= 8) {
+			final Box nextBox = nextBox();
+			
 			log.debug(">>>");
-			log.debug("Available: " + available());
-			log.debug("" + nextBox());
+			log.debug("" + nextBox);
 			log.debug("<<<\n");
+			
+			this.mp4Instance.add(nextBox);
 		}
 		
 		return this.mp4Instance;
@@ -100,11 +102,6 @@ public class MP4Reader extends MP4InputStream {
 			
 			// Read next box
 			nextBox = read(offset - 8, boxType);
-			
-			// Update MP4 instance as required
-			if (nextBox != null && this.mp4Instance != null) {
-				//this.mp4Instance.add(nextBox);
-			}
 		} else {
 			nextBox = null;
 		}

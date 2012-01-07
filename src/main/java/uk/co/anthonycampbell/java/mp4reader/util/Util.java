@@ -49,6 +49,9 @@ import uk.co.anthonycampbell.java.mp4reader.box.common.Box;
  */
 public class Util {
 	
+	/** Default print list separator. */
+	public static final String PRINT_LIST_SEPARATOR = ", ";
+	
 	/**
 	 * Utility method to print all of the fields of the provided box instance.
 	 * 
@@ -67,56 +70,64 @@ public class Util {
 	 * @return list of fields.
 	 */
 	public static <T> String printFields(final Object instance, final Class<T> boxClass) {
+		// Initialise result
 		final StringBuilder builder = new StringBuilder();
-		final Field[] fields = boxClass.getDeclaredFields();
-		final Method[] methods = boxClass.getDeclaredMethods();
 		
-		for (final Field field : fields) {
-			final String fieldName = field.getName();
+		// Validate
+		if (instance != null && boxClass != null) {
+			final Field[] fields = boxClass.getDeclaredFields();
+			final Method[] methods = boxClass.getDeclaredMethods();
 			
-			if (StringUtils.isNotEmpty(fieldName)) {
-				final String fieldMethod = ("get" + fieldName).toLowerCase();
+			for (final Field field : fields) {
+				final String fieldName = field.getName();
 				
-				for (final Method method : methods) {
-					final String methodName = method.getName();
-					final Class<?> returnType = method.getReturnType();
-					boolean boxReturnType = false;
+				if (StringUtils.isNotEmpty(fieldName)) {
+					final String fieldMethod = ("get" + fieldName).toLowerCase();
 					
-					// Determine whether this method returns a Box class
-					if (returnType != null) {						
-						final Class<?>[] returnTypeInterfaces = returnType.getInterfaces();
+					for (final Method method : methods) {
+						final String methodName = method.getName();
+						final Class<?> returnType = method.getReturnType();
+						boolean boxReturnType = false;
 						
-						for (final Class<?> interfaceClass : returnTypeInterfaces) {
-							if (interfaceClass != null && interfaceClass == Box.class) {
-								boxReturnType = true;
-								break;
+						// Determine whether this method returns a Box class
+						if (returnType != null) {						
+							final Class<?>[] returnTypeInterfaces = returnType.getInterfaces();
+							
+							for (final Class<?> interfaceClass : returnTypeInterfaces) {
+								if (interfaceClass != null && interfaceClass == Box.class) {
+									boxReturnType = true;
+									break;
+								}
 							}
 						}
-					}
-
-					// If method is a getter for box property lets print
-					if (StringUtils.isNotEmpty(methodName)) {
-						if (fieldMethod.equals(methodName.toLowerCase())) {
-							try {
-								builder.append(field.getName());
-								builder.append("=");		
-								builder.append((boxReturnType) ? "[" : "");
-								
-								final String fieldValue = "" + method.invoke(instance, new Object[0]);
-								if (StringUtils.isNotEmpty(fieldValue) && fieldValue.endsWith(" ")) {
-									builder.append(fieldValue.substring(0, fieldValue.length() - 1));
-								} else {
-									builder.append(fieldValue);	
-								}
-								
-								builder.append((boxReturnType) ? "]" : "");
-								builder.append(" ");
-								
-							} catch (Exception ex) { }
+	
+						// If method is a getter for box property lets print
+						if (StringUtils.isNotEmpty(methodName)) {
+							if (fieldMethod.equals(methodName.toLowerCase())) {
+								try {
+									builder.append(field.getName());
+									builder.append("=");		
+									builder.append((boxReturnType) ? "[" : "");
+									
+									final String fieldValue = "" + method.invoke(instance, new Object[0]);
+									if (StringUtils.isNotEmpty(fieldValue) && fieldValue.endsWith(" ")) {
+										builder.append(fieldValue.substring(0, fieldValue.length() - 1));
+									} else {
+										builder.append(fieldValue);	
+									}
+									
+									builder.append((boxReturnType) ? "]" : "");
+									builder.append(" ");
+									
+								} catch (Exception ex) { }
+							}
 						}
 					}
 				}
 			}
+		} else {
+			throw new IllegalArgumentException("Provided class details are invalid! " +
+					"(instance=" + instance + ", boxClass=" + boxClass + ")");
 		}
 		
 		return builder.toString();
@@ -186,6 +197,9 @@ public class Util {
 			catch (ParserConfigurationException pce) { }
 			catch (SAXException saxe) { }
 			catch (IOException ioe) { }
+			
+		} else {
+			throw new IllegalArgumentException("Provided XML is invalid! (xml=" + xml + ")");
 		}
 		
 		return iTunesMap;
@@ -239,6 +253,9 @@ public class Util {
 					}
 				}
 			}
+		} else {
+			throw new IllegalArgumentException("Provided node is not a dictionary element! (dictionary=" +
+					dictionary + ")");
 		}
 		
 		return iTunesMap;
@@ -277,23 +294,38 @@ public class Util {
 					}
 				}
 			}
+		} else {
+			throw new IllegalArgumentException("Provided node is not an array element! (array=" +
+					array + ")");
 		}
 		
 		return arrayList;
 	}
 	
 	/**
-	 * Utility method to print the provided list of strings.
+	 * Utility method to print the provided list of strings using the default
+	 * string separator.
 	 * 
 	 * @param list - the list to print.
 	 * @return Comma delimited list of string values.
 	 */
 	public static String printList(final List<String> list) {
+		return printList(list, PRINT_LIST_SEPARATOR);
+	}
+	
+	/**
+	 * Utility method to print the provided list of strings.
+	 * 
+	 * @param list - the list to print.
+	 * @param separator - string separator.
+	 * @return Comma delimited list of string values.
+	 */
+	public static String printList(final List<String> list, final String separator) {
 		// Initialise result
 		final StringBuilder builder = new StringBuilder();
 		
 		// Validate
-		if (list != null && !list.isEmpty()) {
+		if (list != null && separator != null && !list.isEmpty()) {
 			boolean first = true;
 			
 			for (final String element : list) {
@@ -301,14 +333,40 @@ public class Util {
 					if (first) {
 						first = false;
 					} else {
-						builder.append(", ");	
+						builder.append(separator);
 					}
 					
 					builder.append(element);
 				}
 			}
+		} else {
+			throw new IllegalArgumentException("Provided list is invalid! (list=" + list +
+					", separator=" + separator + ")");
 		}
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * Helper method to convert the provided byte array into its numerical
+	 * 16-bit unsigned value.
+	 * 
+	 * @param data - byte array to convert.
+	 * @return 16-bit unsigned value.
+	 */
+	public static int convertToUint16(final byte[] data) {
+		// Initialise result
+		int result = 0;
+
+		// Validate
+		if (data != null && !(data.length > 2)) {
+			for (int i = 0; i < 2; ++i) {
+				result = (result << 8) + (data[i] & 0xFF);
+			}	
+		} else {
+			throw new IllegalArgumentException("Provided byte array is invalid! (data=" + data + ")");
+		}
+		
+		return result;
 	}
 }

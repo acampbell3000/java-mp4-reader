@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.co.anthonycampbell.java.mp4reader.box.common.AbstractBox;
 import uk.co.anthonycampbell.java.mp4reader.box.common.Box;
+import uk.co.anthonycampbell.java.mp4reader.box.item.IlstBox;
 import uk.co.anthonycampbell.java.mp4reader.box.sample.AudioBox;
 import uk.co.anthonycampbell.java.mp4reader.box.sample.TextBox;
 import uk.co.anthonycampbell.java.mp4reader.box.sample.VideoBox;
@@ -39,7 +40,7 @@ import uk.co.anthonycampbell.java.mp4reader.util.Util;
  * 
  * @author Anthony Campbell - anthonycampbell.co.uk
  */
-public class TrakBox extends AbstractBox implements Box {
+public class TrakBox extends AbstractBox implements Box, Comparable<TrakBox> {
 	
 	// Log
 	private static final Logger log = LoggerFactory.getLogger(TrakBox.class.getName());
@@ -54,6 +55,7 @@ public class TrakBox extends AbstractBox implements Box {
 	protected final VideoBox videoSample;
 	protected final AudioBox audioSample;
 	protected final TextBox textSample;
+	protected final IlstBox metaData;
 	
 	/**
 	 * Constructor.
@@ -77,6 +79,7 @@ public class TrakBox extends AbstractBox implements Box {
 		AudioBox audioSample = null;
 		TextBox textSample = null;
 		String trackName = "";
+		IlstBox metaData = null;
 		
 		// Parse inner boxes
 		while (bytesRemaining() > 0) {
@@ -85,9 +88,7 @@ public class TrakBox extends AbstractBox implements Box {
 			// Validate
 			if (nextBox != null) {
 				if (nextBox instanceof TkhdBox && BoxType.TRACK_HEADER == nextBox.getBoxType()) {
-					final TkhdBox tkhdBox = (TkhdBox) nextBox;
-
-					trackId = tkhdBox.getTrackId();
+					trackId = ((TkhdBox) nextBox).getTrackId();
 					
 				} else if (nextBox instanceof MdiaBox && BoxType.MEDIA_STREAM == nextBox.getBoxType()) {
 					final MdiaBox mdiaBox = (MdiaBox) nextBox;
@@ -103,6 +104,7 @@ public class TrakBox extends AbstractBox implements Box {
 					final UdtaBox udtaBox = (UdtaBox) nextBox;
 
 					trackName = udtaBox.getName();
+					metaData = udtaBox.getMetaData();
 				}
 				
 				log.debug("- '" + boxName + "' -> " + nextBox);	
@@ -118,6 +120,7 @@ public class TrakBox extends AbstractBox implements Box {
 		this.videoSample = videoSample;
 		this.audioSample = audioSample;
 		this.textSample = textSample;
+		this.metaData = metaData;
 		
 		// Determine track type
 		if (this.videoSample != null) {
@@ -200,6 +203,13 @@ public class TrakBox extends AbstractBox implements Box {
 		return this.textSample;
 	}
 
+	/**
+	 * @return the meta data.
+	 */
+	public IlstBox getMetaData() {
+		return this.metaData;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
@@ -207,6 +217,45 @@ public class TrakBox extends AbstractBox implements Box {
 		builder.append(Util.printFields(this));
 		
 		return builder.toString();
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (this.trackId ^ (this.trackId >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof TrakBox))
+			return false;
+		
+		final TrakBox other = (TrakBox) obj;
+		if (this.trackId != other.trackId)
+			return false;
+		
+		return true;
+	}
+	
+	@Override
+	public int compareTo(final TrakBox trakBox) {
+		if (trakBox != null) {
+			if (this.trackId > trakBox.trackId) {
+				return 1;
+			} else if (this.trackId < trakBox.trackId) {
+				return -1;
+			} else {
+				return 0;		
+			}
+		} else {
+			return 1;
+		}
 	}
 	
 	/**

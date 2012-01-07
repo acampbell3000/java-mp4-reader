@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import uk.co.anthonycampbell.java.mp4reader.box.common.AbstractBox;
 import uk.co.anthonycampbell.java.mp4reader.box.common.Box;
 import uk.co.anthonycampbell.java.mp4reader.box.item.AdditionalInfoBox;
+import uk.co.anthonycampbell.java.mp4reader.box.item.IlstBox;
 import uk.co.anthonycampbell.java.mp4reader.box.movie.MetaBox;
 import uk.co.anthonycampbell.java.mp4reader.reader.BoxType;
 import uk.co.anthonycampbell.java.mp4reader.reader.MP4Reader;
@@ -41,6 +42,7 @@ public class UdtaBox extends AbstractBox implements Box {
 
 	// Declare box properties
 	protected final String name;
+	protected final IlstBox metaData;
 	
 	/**
 	 * Constructor.
@@ -57,6 +59,7 @@ public class UdtaBox extends AbstractBox implements Box {
 		
 		// Initialise defaults
 		String name = "";
+		IlstBox metaData = null;
 		
 		// Parse inner boxes
 		while (bytesRemaining() > 0) {
@@ -66,15 +69,11 @@ public class UdtaBox extends AbstractBox implements Box {
 			if (nextBox != null) {
 				if (nextBox instanceof AdditionalInfoBox &&
 						BoxType.APPLE_ITEM_ADDITIONAL_NAME == nextBox.getBoxType()) {
-					final AdditionalInfoBox additionalInfoBox = (AdditionalInfoBox) nextBox;
-
-					name = additionalInfoBox.getText();
+					name = ((AdditionalInfoBox) nextBox).getText();
 					
 				} else if (nextBox instanceof MetaBox &&
 						BoxType.MOVIE_PRESENTATION_META_DATA == nextBox.getBoxType()) {
-					final MetaBox metaBox = (MetaBox) nextBox;
-
-//					name = metaBox;				
+					metaData = ((MetaBox) nextBox).getMetaData();
 				}
 				
 				log.debug("- '" + boxName + "' -> " + nextBox);	
@@ -82,6 +81,7 @@ public class UdtaBox extends AbstractBox implements Box {
 		}
 		
 		this.name = name;
+		this.metaData = metaData;
 
 		// Clean up
 		skip();
@@ -94,6 +94,13 @@ public class UdtaBox extends AbstractBox implements Box {
 		return this.name;
 	}
 	
+	/**
+	 * @return the meta data.
+	 */
+	public IlstBox getMetaData() {
+		return this.metaData;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();

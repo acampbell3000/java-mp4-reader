@@ -17,13 +17,16 @@ package uk.co.anthonycampbell.java.mp4reader.reader;
  */
 
 import java.math.BigInteger;
+import java.nio.file.Path;
 import java.util.Date;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.co.anthonycampbell.java.mp4reader.box.common.Box;
-import uk.co.anthonycampbell.java.mp4reader.box.item.ItemBox;
-import uk.co.anthonycampbell.java.mp4reader.box.sample.VideoBox;
-import uk.co.anthonycampbell.java.mp4reader.box.track.TrakBox;
-import uk.co.anthonycampbell.java.mp4reader.box.track.TrakBox.Type;
+import uk.co.anthonycampbell.java.mp4reader.box.movie.MoovBox;
+import uk.co.anthonycampbell.java.mp4reader.box.type.FtypBox;
 import uk.co.anthonycampbell.java.mp4reader.util.Util;
 
 /**
@@ -33,27 +36,41 @@ import uk.co.anthonycampbell.java.mp4reader.util.Util;
  */
 public class MP4 {
 	
+	// Log
+	private static final Logger log = LoggerFactory.getLogger(MP4.class.getName());
+	
 	// Declare properties
+	protected String type;
+	protected Path filePath;
+
 	protected String title;
-	protected String filePath;
-	protected Date creationDate;
-	protected Date modifiedDate;
 	protected String show;
-	protected String actors;
-	protected String director;
-	protected String producer;
-	protected String screenWriter;
 	protected String releaseDate;
 	protected String rating;
 	protected String genre;
+	protected byte[] cover;
 	protected String description;
 	protected String synopsis;
-	protected byte[] cover;
+	protected String mediaType;
+	protected List<String> actors;
+	protected List<String> directors;
+	protected List<String> producers;
+	protected List<String> screenWriters;
+	protected String tvShow;
+	protected String tvEpisodeId;
+	protected String tvSeason;
+	protected String tvEpisode;
+	protected String tvNetworkName;
 	protected String copyright;
-	protected long track;
 	protected String encodingTool;
 	protected String sortName;
+	protected String sortAlbum;
+	protected String sortAlbumArtist;
 	protected String sortArtist;
+	protected String sortShow;
+
+	protected Date creationDate;
+	protected Date modifiedDate;
 	protected BigInteger duration;
  	protected String bitrate; 	// bitrate (kbps)  = ( filesize * framerate ) / num_frames;
 	protected int pixelFrameWidth;
@@ -76,12 +93,10 @@ public class MP4 {
 	/**
 	 * Constructor.
 	 * 
-	 * @param absolutePath - absolute file path.
-	 * @param lastModifiedDate - last modified date.
+	 * @param filePath - MP4 file path.
 	 */
-	public MP4(final String absoluteFilePath, final Date lastModifiedDate) {
-		this.filePath = absoluteFilePath;
-		this.modifiedDate = lastModifiedDate;
+	public MP4(final Path filePath) {
+		this.filePath = filePath;
 	}
 
 	/**
@@ -94,215 +109,30 @@ public class MP4 {
 			final BoxType boxType = box.getBoxType();
 			
 			if (boxType != null) {
-				// User meta data
-				if (box instanceof ItemBox) {
-					final ItemBox itemBox = (ItemBox) box;
-					
-					switch (boxType) {
-						case APPLE_ITEM_COVER:
-							this.cover = itemBox.getData();
-							break;
-					}
-				}
+				log.debug("Adding box '" + box.getBoxName() + "' to " +
+						this.getClass().getSimpleName() + "\n");
 				
-				// Sample stream information
-				if (box instanceof TrakBox) {
-					final TrakBox trakBox = (TrakBox) box;
-					final Type trakType = trakBox.getType();
+				if (box instanceof FtypBox && BoxType.FILE_TYPE == boxType) {
+					this.type = ((FtypBox) box).getMajorBrand();
 					
-					this.duration = trakBox.getDuration();
-					this.creationDate = trakBox.getCreationDate();
+				} else if (box instanceof MoovBox && BoxType.MOVIE_HEADER == boxType) {
+					final MoovBox moovBox = (MoovBox) box;
+
+					this.creationDate = moovBox.getCreationDate();
+					this.modifiedDate = moovBox.getModifiedDate();				
+					this.duration = moovBox.getDuration();
 					
-					if (trakType != null) {
-						switch (trakType) {
-							case VIDEO:
-								final VideoBox videoSample = trakBox.getVideoSample();
-								
-								if (videoSample != null) {
-									videoSample.getFrameCount();
-									this.pixelFrameWidth = videoSample.getPixelFrameWidth();
-									this.pixelFrameHeight = videoSample.getPixelFrameHeight();
-								}
-								
-								break;
-						}
-					}
+					moovBox.getTimeScale();
+					moovBox.getTrackSet();
+					moovBox.getMetaData();
 				}
 			}
 		} else {
-			throw new IllegalArgumentException("Unable to update MP4 instance, the provided box " +
-					"is invalid! (box=" + box + ")");
+			throw new IllegalArgumentException("Unable to update " + this.getClass().getSimpleName() +
+					" instance, the provided box is invalid! (box=" + box + ")");
 		}
 	}
 	
-	/**
-	 * @return the title.
-	 */
-	public String getTitle() {
-		return this.title;
-	}
-	
-	/**
-	 * @return the file path.
-	 */
-	public String getFilePath() {
-		return this.filePath;
-	}
-	
-	/**
-	 * @return the creation date.
-	 */
-	public Date getCreationDate() {
-		return this.creationDate;
-	}
-
-	/**
-	 * @return the modified date.
-	 */
-	public Date getModifiedDate() {
-		return this.modifiedDate;
-	}
-
-	/**
-	 * @return the show.
-	 */
-	public String getShow() {
-		return this.show;
-	}
-	
-	/**
-	 * @return the actors.
-	 */
-	public String getActors() {
-		return this.actors;
-	}
-	
-	/**
-	 * @return the director.
-	 */
-	public String getDirector() {
-		return this.director;
-	}
-	
-	/**
-	 * @return the producer.
-	 */
-	public String getProducer() {
-		return this.producer;
-	}
-	
-	/**
-	 * @return the screen writer.
-	 */
-	public String getScreenWriter() {
-		return this.screenWriter;
-	}
-	
-	/**
-	 * @return the release date.
-	 */
-	public String getReleaseDate() {
-		return this.releaseDate;
-	}
-	
-	/**
-	 * @return the rating.
-	 */
-	public String getRating() {
-		return this.rating;
-	}
-	
-	/**
-	 * @return the genre.
-	 */
-	public String getGenre() {
-		return this.genre;
-	}
-	
-	/**
-	 * @return the description.
-	 */
-	public String getDescription() {
-		return this.description;
-	}
-	
-	/**
-	 * @return the synopsis.
-	 */
-	public String getSynopsis() {
-		return this.synopsis;
-	}
-	
-	/**
-	 * @return the cover.
-	 */
-	public byte[] getCover() {
-		return this.cover;
-	}
-	
-	/**
-	 * @return the copyright.
-	 */
-	public String getCopyright() {
-		return this.copyright;
-	}
-	
-	/**
-	 * @return the track.
-	 */
-	public long getTrack() {
-		return this.track;
-	}
-	
-	/**
-	 * @return the encoding tool.
-	 */
-	public String getEncodingTool() {
-		return this.encodingTool;
-	}
-	
-	/**
-	 * @return the sort name.
-	 */
-	public String getSortName() {
-		return this.sortName;
-	}
-	
-	/**
-	 * @return the sort artist.
-	 */
-	public String getSortArtist() {
-		return this.sortArtist;
-	}
-	
-	/**
-	 * @return the duration.
-	 */
-	public String getDuration() {
-		return this.duration.toString();
-	}
-
-	/**
-	 * @return the bit rate.
-	 */
-	public String getBitrate() {
-		return this.bitrate;
-	}
-	
-	/**
-	 * @return the pixel frame width.
-	 */
-	public int getPixelFrameWidth() {
-		return this.pixelFrameWidth;
-	}
-
-	/**
-	 * @return the pixel frame height.
-	 */
-	public int getPixelFrameHeight() {
-		return this.pixelFrameHeight;
-	}
-
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
