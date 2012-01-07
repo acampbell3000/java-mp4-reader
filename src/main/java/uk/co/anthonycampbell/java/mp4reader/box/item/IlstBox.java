@@ -194,10 +194,10 @@ public class IlstBox extends AbstractBox implements Box {
 								case RATING:
 									final String ratingString = new String(data);
 
-									log.debug(ratingString);
+									log.trace(ratingString);
 									
 									if (StringUtils.isNotEmpty(ratingString)) {
-										final String[] ratingSplit = ratingString.split("|");
+										final String[] ratingSplit = ratingString.split("\\|");
 										
 										if (ratingSplit.length >= 3 && Rating.KEY.equals(ratingSplit[0])) {
 											final Rating[] ratings = Rating.values();
@@ -215,7 +215,7 @@ public class IlstBox extends AbstractBox implements Box {
 								case META:
 									final String metaXml = new String(data);
 
-									log.debug(metaXml);
+									log.trace(metaXml);
 									
 									if (StringUtils.isNotEmpty(metaXml)) {
 										final Map<String, List<String>> iTunesMetaData = Util.parseITunesMeta(metaXml);
@@ -595,30 +595,27 @@ public class IlstBox extends AbstractBox implements Box {
 	 * @author Anthony Campbell - anthonycampbell.co.uk
 	 */
 	public enum Rating {
-		UNKNOWN("", -1),
-		UNIVERSAL("U", 0),
-		PARENTAL_GUIDANCE("PG", 1),
-		TWELVE("12", 2),
-		TWELVE_A("12A", 3),
-		FIFTHTEEN("15", 4),
-		EIGHTEEN("18", 5);
+		UNKNOWN(""),
+		UNIVERSAL("U"),
+		PARENTAL_GUIDANCE("PG"),
+		TWELVE("12"),
+		TWELVE_A("12A"),
+		FIFTHTEEN("15"),
+		EIGHTEEN("18");
 		
 		// iTunes rating key
-		public static final String KEY = "";
+		public static final String KEY = "uk-movie";
 		
 		// Declare properties
 		private final String rating;
-		private final int weighting;
 		
 		/**
 		 * Constructor.
 		 * 
 		 * @param rating - the rating.
-		 * @param weighting - the rating weight.
 		 */
-		private Rating(final String rating, final int weighting) {
+		private Rating(final String rating) {
 			this.rating = rating;
-			this.weighting = weighting;
 		}
 
 		/**
@@ -627,16 +624,8 @@ public class IlstBox extends AbstractBox implements Box {
 		public String getRating() {
 			return this.rating;
 		}
-		
-		/**
-		 * @return the rating weight.
-		 */
-		public int getWeighting() {
-			return this.weighting;
-		}
 	}
 
-	
 	/**
 	 * ENUM to represent the container media type.
 	 * 
