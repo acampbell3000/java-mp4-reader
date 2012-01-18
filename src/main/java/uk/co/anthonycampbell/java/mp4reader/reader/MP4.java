@@ -20,6 +20,7 @@ import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import uk.co.anthonycampbell.java.mp4reader.box.common.Box;
 import uk.co.anthonycampbell.java.mp4reader.box.item.IlstBox;
 import uk.co.anthonycampbell.java.mp4reader.box.movie.MoovBox;
+import uk.co.anthonycampbell.java.mp4reader.box.track.TrakBox;
 import uk.co.anthonycampbell.java.mp4reader.box.type.FtypBox;
 import uk.co.anthonycampbell.java.mp4reader.util.Util;
 
@@ -215,7 +217,20 @@ public class MP4 implements Comparable<MP4> {
 						}
 					}
 
-					moovBox.getTrackSet();
+					final Set<TrakBox> trackSet = moovBox.getTrackSet();
+					for (final TrakBox trakBox : trackSet) {
+						trakBox.getCreationDate();
+						trakBox.getModifiedDate();
+						trakBox.getAudioSample();
+						trakBox.getVideoSample();
+						trakBox.getTextSample();
+						trakBox.getDuration();
+						trakBox.getMetaData();
+						trakBox.getTrackId();
+						trakBox.getType();
+						trakBox.getTrackName();
+						trakBox.getTotalBlockSize();
+					}
 				}
 			}
 		} else {

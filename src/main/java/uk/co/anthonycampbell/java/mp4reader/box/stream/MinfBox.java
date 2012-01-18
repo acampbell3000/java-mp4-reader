@@ -45,6 +45,7 @@ public class MinfBox extends AbstractBox implements Box {
 	protected final VideoBox videoSample;
 	protected final AudioBox audioSample;
 	protected final TextBox textSample;
+	protected final long totalBlockSize;
 	
 	/**
 	 * Constructor.
@@ -62,6 +63,7 @@ public class MinfBox extends AbstractBox implements Box {
 		VideoBox videoSample = null;
 		AudioBox audioSample = null;
 		TextBox textSample = null;
+		long totalBlockSize = 0;
 		
 		// Parse inner boxes
 		while (bytesRemaining() > 0) {
@@ -75,6 +77,7 @@ public class MinfBox extends AbstractBox implements Box {
 					videoSample = stblBox.getVideoSample();
 					audioSample = stblBox.getAudioSample();
 					textSample = stblBox.getTextSample();
+					totalBlockSize = stblBox.getTotalBlockSize();
 				}
 			}
 			
@@ -84,6 +87,7 @@ public class MinfBox extends AbstractBox implements Box {
 		this.videoSample = videoSample;
 		this.audioSample = audioSample;
 		this.textSample = textSample;
+		this.totalBlockSize = totalBlockSize;
 
 		// Clean up
 		skip();
@@ -108,6 +112,13 @@ public class MinfBox extends AbstractBox implements Box {
 	 */
 	public TextBox getTextSample() {
 		return this.textSample;
+	}
+
+	/**
+	 * @return the total block size.
+	 */
+	public long getTotalBlockSize() {
+		return this.totalBlockSize;
 	}
 	
 	@Override

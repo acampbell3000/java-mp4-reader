@@ -18,9 +18,6 @@ package uk.co.anthonycampbell.java.mp4reader.box.sample;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import uk.co.anthonycampbell.java.mp4reader.box.common.AbstractBox;
 import uk.co.anthonycampbell.java.mp4reader.box.common.Box;
 import uk.co.anthonycampbell.java.mp4reader.reader.BoxType;
@@ -28,20 +25,19 @@ import uk.co.anthonycampbell.java.mp4reader.reader.MP4Reader;
 import uk.co.anthonycampbell.java.mp4reader.util.Util;
 
 /**
- * Class to encapsulate the MP4 media sample table box (stbl).
+ * Class to encapsulate the MP4 media sample block size box (stsz).
  * 
  * @author Anthony Campbell - anthonycampbell.co.uk
  */
-public class StblBox extends AbstractBox implements Box {
-	
-	// Log
-	private static final Logger log = LoggerFactory.getLogger(StblBox.class.getName());
+public class StszBox extends AbstractBox implements Box {
 
 	// Declare box properties
-	protected final VideoBox videoSample;
-	protected final AudioBox audioSample;
-	protected final TextBox textSample;
+	protected final short version;
+	protected final long flags;
+	protected final long fixedBlockSize;
+	protected final long numberOfBlocks;
 	protected final long totalBlockSize;
+	protected final long[][] blockSizes;
 	
 	/**
 	 * Constructor.
@@ -52,68 +48,83 @@ public class StblBox extends AbstractBox implements Box {
 	 * @param boxType - box type ENUM.
 	 * @throws IOException Unable read remaining bytes from the stream.
 	 */
-	public StblBox(final MP4Reader reader, final long remainingOffset, final String boxName,
+	public StszBox(final MP4Reader reader, final long remainingOffset, final String boxName,
 			final BoxType boxType) throws IOException {
 		super(reader, remainingOffset, boxName, boxType);
 
-		VideoBox videoSample = null;
-		AudioBox audioSample = null;
-		TextBox textSample = null;
+		this.version = reader.readUnsignedByte();
+		this.flags = reader.readHex();
+		this.fixedBlockSize = reader.readUnsignedInt();
+		this.numberOfBlocks = reader.readUnsignedInt();
+		
+		// Set defaults
 		long totalBlockSize = 0;
 		
-		// Parse inner boxes
-		while (bytesRemaining() > 0) {
-			final Box nextBox = reader.nextBox();
-			
-			// Validate
-			if (nextBox != null) {
-				if (nextBox instanceof StsdBox && BoxType.SAMPLE_DESCRIPTION == nextBox.getBoxType()) {
-					final StsdBox stsdBox = (StsdBox) nextBox;
-
-					videoSample = stsdBox.getVideoBox();
-					audioSample = stsdBox.getAudioBox();
-					textSample = stsdBox.getTextBox();
-					
-				} else if (nextBox instanceof SttsBox &&
-						BoxType.SAMPLE_FRAMING_TIMING == nextBox.getBoxType()) {
-								
-				} else if (nextBox instanceof StszBox &&
-						BoxType.SAMPLE_FRAME_BLOCK_SIZE == nextBox.getBoxType()) {
-					totalBlockSize = ((StszBox) nextBox).getTotalBlockSize();
-				}
-				
-				log.debug("- '" + boxName + "' -> " + nextBox);
+		// If not fixed we need to read all of the variable block sizes
+		if (this.fixedBlockSize == 0) {
+			if (this.numberOfBlocks > Integer.MAX_VALUE) {
+				this.blockSizes = new long[(int) Math.ceil((this.numberOfBlocks / Integer.MAX_VALUE))][Integer.MAX_VALUE];
+			} else {
+				this.blockSizes = new long[1][(int) this.numberOfBlocks];
 			}
+			
+			// Read block sizes
+			int i = 0;
+			int j = 0;
+			for (long l = 0; l < this.numberOfBlocks; ++l) {
+				final long blockSize = reader.readUnsignedInt();
+				this.blockSizes[i][j] = blockSize;
+				totalBlockSize += blockSize;
+				
+				j++;
+				if (j > Integer.MAX_VALUE) {
+					j = 0; i++;
+				}
+			}
+		} else {
+			totalBlockSize = this.fixedBlockSize * this.numberOfBlocks;
+			this.blockSizes = new long[0][0];
 		}
 		
-		this.videoSample = videoSample;
-		this.audioSample = audioSample;
-		this.textSample = textSample;
 		this.totalBlockSize = totalBlockSize;
-
+		
 		// Clean up
 		skip();
 	}
 	
 	/**
-	 * @return the video sample.
+	 * @return the version.
 	 */
-	public VideoBox getVideoSample() {
-		return this.videoSample;
+	public short getVersion() {
+		return this.version;
 	}
 	
 	/**
-	 * @return the audio sample.
+	 * @return the hex flags.
 	 */
-	public AudioBox getAudioSample() {
-		return this.audioSample;
+	public long getFlags() {
+		return this.flags;
 	}
-	
+
 	/**
-	 * @return the text sample.
+	 * @return the hex flags string.
 	 */
-	public TextBox getTextSample() {
-		return this.textSample;
+	public String getFlagsHexString() {
+		return Long.toHexString(this.flags);
+	}
+
+	/**
+	 * @return the fixed block size.
+	 */
+	public long getFixedBlockSize() {
+		return this.fixedBlockSize;
+	}
+
+	/**
+	 * @return the number of blocks.
+	 */
+	public long getNumberOfBlocks() {
+		return this.numberOfBlocks;
 	}
 
 	/**
@@ -121,6 +132,13 @@ public class StblBox extends AbstractBox implements Box {
 	 */
 	public long getTotalBlockSize() {
 		return this.totalBlockSize;
+	}
+
+	/**
+	 * @return the block sizes.
+	 */
+	public long[][] getBlockSizes() {
+		return this.blockSizes;
 	}
 
 	@Override

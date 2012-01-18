@@ -46,6 +46,7 @@ public class MdiaBox extends AbstractBox implements Box {
 	protected final Date creationDate;
 	protected final Date modifiedDate;
 	protected final long timeScale;
+	protected final long totalBlockSize;
 	protected final BigInteger duration;
 	protected final VideoBox videoSample;
 	protected final AudioBox audioSample;
@@ -68,6 +69,7 @@ public class MdiaBox extends AbstractBox implements Box {
 		Date creationDate = new Date();
 		Date modifiedDate = new Date();
 		long timeScale = 0;
+		long totalBlockSize = 0;
 		BigInteger duration = new BigInteger("0");
 		VideoBox videoSample = null;
 		AudioBox audioSample = null;
@@ -100,6 +102,7 @@ public class MdiaBox extends AbstractBox implements Box {
 					videoSample = minfBox.getVideoSample();
 					audioSample = minfBox.getAudioSample();
 					textSample = minfBox.getTextSample();
+					totalBlockSize = minfBox.getTotalBlockSize();
 				}
 				
 				log.debug("- '" + boxName + "' -> " + nextBox);	
@@ -110,6 +113,7 @@ public class MdiaBox extends AbstractBox implements Box {
 		this.creationDate = creationDate;
 		this.modifiedDate = modifiedDate;
 		this.timeScale = timeScale;
+		this.totalBlockSize = totalBlockSize;
 		this.duration = duration;
 		this.videoSample = videoSample;
 		this.audioSample = audioSample;
@@ -140,6 +144,13 @@ public class MdiaBox extends AbstractBox implements Box {
 		return this.timeScale;
 	}
 
+	/**
+	 * @return the total block size.
+	 */
+	public long getTotalBlockSize() {
+		return this.totalBlockSize;
+	}
+	
 	/**
 	 * @return the duration.
 	 */

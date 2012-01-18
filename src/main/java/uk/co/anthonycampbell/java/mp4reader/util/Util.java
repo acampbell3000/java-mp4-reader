@@ -144,6 +144,10 @@ public class Util {
 	public static Date generateDate(final BigInteger bigInteger) {
 		// Validate
 		if (bigInteger != null) {
+			/*
+			 *  TODO If once upon a time we have a very LARGE time stamp
+			 *  this call will only return the lower order 64 bits.
+			 */
 			final Calendar calendar = Calendar.getInstance();
 			calendar.set(1904, Calendar.JANUARY, 1, 0, 0, 0);
 			calendar.setTimeInMillis(calendar.getTimeInMillis() + (bigInteger.longValue() * 1000));			

@@ -38,6 +38,7 @@ import uk.co.anthonycampbell.java.mp4reader.box.sample.EsdsBox;
 import uk.co.anthonycampbell.java.mp4reader.box.sample.StblBox;
 import uk.co.anthonycampbell.java.mp4reader.box.sample.StscBox;
 import uk.co.anthonycampbell.java.mp4reader.box.sample.StsdBox;
+import uk.co.anthonycampbell.java.mp4reader.box.sample.StszBox;
 import uk.co.anthonycampbell.java.mp4reader.box.sample.SttsBox;
 import uk.co.anthonycampbell.java.mp4reader.box.sample.TextBox;
 import uk.co.anthonycampbell.java.mp4reader.box.sample.VideoBox;
@@ -84,6 +85,7 @@ public enum BoxType {
 	SAMPLE_DAC3_DESCRIPTOR("dac3", Dac3Box.class),
 	SAMPLE_FRAMING_TIMING("stts", SttsBox.class),
 	SAMPLE_FRAME_BLOCKS("stsc", StscBox.class),
+	SAMPLE_FRAME_BLOCK_SIZE("stsz", StszBox.class),
 	HANDLER_REFERNECE("hdlr", HdlrBox.class),
 	APPLE_ITEM_LIST("ilst", IlstBox.class),	
 	APPLE_ITEM_NAME("nam", ItemBox.class),

@@ -49,6 +49,10 @@ public class MdatBox extends AbstractBox implements Box {
 		if (remainingOffset == -7) {
 			final BigInteger extendedLength = reader.readLong();
 			if (extendedLength != null) {
+				/*
+				 *  TODO If once upon a time we have a very LARGE length
+				 *  this call will only return the lower order 64 bits.
+				 */
 				final long updatedOffset = extendedLength.longValue();
 				
 				skip(updatedOffset - 16);

@@ -51,6 +51,7 @@ public class TrakBox extends AbstractBox implements Box, Comparable<TrakBox> {
 	protected final Type type;
 	protected final Date creationDate;
 	protected final Date modifiedDate;
+	protected final long totalBlockSize;
 	protected final BigInteger duration;
 	protected final VideoBox videoSample;
 	protected final AudioBox audioSample;
@@ -72,13 +73,14 @@ public class TrakBox extends AbstractBox implements Box, Comparable<TrakBox> {
 		
 		// Set defaults
 		long trackId = 0;
+		String trackName = "";
 		Date creationDate = new Date();
 		Date modifiedDate = new Date();
+		long totalBlockSize = 0;
 		BigInteger duration = new BigInteger("0");
 		VideoBox videoSample = null;
 		AudioBox audioSample = null;
 		TextBox textSample = null;
-		String trackName = "";
 		IlstBox metaData = null;
 		
 		// Parse inner boxes
@@ -95,6 +97,7 @@ public class TrakBox extends AbstractBox implements Box, Comparable<TrakBox> {
 
 					creationDate = mdiaBox.getCreationDate();
 					modifiedDate = mdiaBox.getModifiedDate();
+					totalBlockSize = mdiaBox.getTotalBlockSize();
 					duration = mdiaBox.getDuration();
 					videoSample = mdiaBox.getVideoSample();
 					audioSample = mdiaBox.getAudioSample();
@@ -116,6 +119,7 @@ public class TrakBox extends AbstractBox implements Box, Comparable<TrakBox> {
 		this.trackName = trackName;
 		this.creationDate = creationDate;
 		this.modifiedDate = modifiedDate;
+		this.totalBlockSize = totalBlockSize;
 		this.duration = duration;
 		this.videoSample = videoSample;
 		this.audioSample = audioSample;
@@ -173,6 +177,13 @@ public class TrakBox extends AbstractBox implements Box, Comparable<TrakBox> {
 	 */
 	public Date getModifiedDate() {
 		return this.modifiedDate;
+	}
+
+	/**
+	 * @return the total block size.
+	 */
+	public long getTotalBlockSize() {
+		return this.totalBlockSize;
 	}
 
 	/**
